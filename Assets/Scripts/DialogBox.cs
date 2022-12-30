@@ -37,21 +37,29 @@ public class Field
 public class IOImage
 {
     public RenderTexture image;
-    public DialogBox reference;
-    public bool ready;
+    internal CompletionState state = CompletionState.unready;
 
-    public IOImage(int resolution, DialogBox refer)
+    internal enum CompletionState
+    {
+        ready, unready, failed
+    }
+
+    public IOImage()
+    {
+        state = CompletionState.unready;
+    }
+    public IOImage(int resolution)
     {
         image = new RenderTexture(resolution, resolution, 0);
         image.enableRandomWrite = true;
+        image.graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16A16_SFloat;
         image.Create();
-        ready = false;
-        reference = refer;
+        state = CompletionState.unready;
     }
 
     public void Clear()
     {
-        ready = false;
+        state = CompletionState.unready;
         if (image != null)
             Object.DestroyImmediate(image, true);
     }
@@ -59,14 +67,14 @@ public class IOImage
 
 public class DialogBox : MonoBehaviour
 {
-    public List<IOImage> inputs;
+    public List<DialogBox> inputs;
     public IOImage output;
     public bool readyInputs
     {
         get
         {
             for (int i = 0; i < inputs.Count; i++)
-                if (!inputs[i].ready || inputs[i] == null)
+                if (inputs[i] == null || inputs[i].output.state != IOImage.CompletionState.ready)
                     return false;
             return true;
         }
@@ -83,6 +91,7 @@ public class DialogBox : MonoBehaviour
     public GameObject prefabColorArr => (GameObject)Resources.Load("ColorArray");
     public GameObject prefabDisplayText => (GameObject)Resources.Load("TextDisplay");
     public GameObject prefabBoolean => (GameObject)Resources.Load("Toggle");
+    public GameObject prefabInput => (GameObject)Resources.Load("NodeIn");
 
     RectTransform rectTr;
     float fieldPositions;
@@ -91,7 +100,7 @@ public class DialogBox : MonoBehaviour
     public bool finished;
     Vector3 relMousePos, MousePos;
 
-    void SetInput(DialogBox reference, int index) => inputs[index] = reference.output;
+    public void SetInput(DialogBox reference, int index) => inputs[index] = reference;
 
     // Start is called before the first frame update
     void Start()
@@ -100,10 +109,25 @@ public class DialogBox : MonoBehaviour
         Initialize();
         onValidate += OnValidation;
         startFunction();
+        InitializeInputs();
+    }
+
+    void InitializeInputs()
+    {
+        for (int i = 0; i < inputs.Count; i++)
+        {
+            GameObject g = Instantiate(prefabInput, transform);
+            float y = -200f * (i - 0.5f * (inputs.Count - 1f)) / (inputs.Count + 1.0f);
+            g.transform.SetAsFirstSibling();
+            g.GetComponent<RectTransform>().anchoredPosition = new Vector2(-8, y);
+            g.GetComponent<NodeInput>().index = i;
+            g.GetComponentInChildren<Text>().text = (i + 1).ToString();
+        }
     }
 
     void Initialize()
     {
+        output = new IOImage();
         rectTr.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 108f + fields.Count * 30f);
         fieldPositions = 68f;
         Text txt = GetComponentInChildren<Text>();
@@ -274,8 +298,6 @@ public class DialogBox : MonoBehaviour
 
     private void OnDestroy()
     {
-        foreach (IOImage i in inputs)
-            i.Clear();
         output.Clear();
         inputs.Clear();
     }
@@ -336,6 +358,12 @@ public class DialogBox : MonoBehaviour
             onValidate();
             runFunction();
             finished = true;
+        }
+        if (!EditorLogic.run)
+        {
+            if (finished)
+                output.Clear();
+            finished = false;
         }
     }
 

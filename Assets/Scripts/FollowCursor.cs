@@ -6,11 +6,13 @@ public class FollowCursor : MonoBehaviour
 {
     UILine line;
     public string followName;
+    DialogBox reference;
     bool set;
     // Start is called before the first frame update
     void Start()
     {
         line = GetComponent<UILine>();
+        reference = GetComponentInParent<DialogBox>();
     }
 
     // Update is called once per frame
@@ -28,7 +30,18 @@ public class FollowCursor : MonoBehaviour
         }
         else if (followName != "") {
             GameObject target = GameObject.Find(followName);
-            line.pointD = target.transform.position - transform.position;
+            if (target == null)
+            {
+                followName = "";
+                return;
+            }
+            NodeInput a = target.GetComponent<NodeInput>();
+            if (a.reference.inputs[a.index] != reference)
+            {
+                followName = "";
+                return;
+            }
+            line.pointD = (target.transform.position - transform.position) / CanvasZoom.zoom;
             line.pointC = line.pointD - Vector3.right * (30f + Mathf.Abs(line.pointD.x - 10f) * 0.5f);
             line.pointB = Vector3.right * (40f + Mathf.Abs(line.pointD.x - 10f) * 0.5f);
             line.pointA = Vector3.zero;
@@ -60,6 +73,11 @@ public class FollowCursor : MonoBehaviour
             return;
         if (MouseHoverOver(Input.mousePosition))
         {
+            if (followName != "cursor" && followName != "")
+            {
+                NodeInput prev = GameObject.Find(followName).GetComponent<NodeInput>();
+                prev.reference.SetInput(null, prev.index);
+            }
             if (EditorLogic.conSelected != null)
                 EditorLogic.conSelected.followName = "";
             EditorLogic.conSelected = this;
@@ -68,7 +86,16 @@ public class FollowCursor : MonoBehaviour
         else if (EditorLogic.conSelected == this)
         {
             if (EditorLogic.hoveringOverInput.Count > 0)
-                followName = EditorLogic.hoveringOverInput[0].name;
+            {
+                if (EditorLogic.hoveringOverInput[0].transform.parent == transform.parent)
+                    followName = "";
+                else
+                {
+                    NodeInput selected = EditorLogic.hoveringOverInput[0];
+                    followName = selected.name;
+                    selected.reference.SetInput(reference, selected.index);
+                }
+            }
             else
                 followName = "";
             EditorLogic.conSelected = null;

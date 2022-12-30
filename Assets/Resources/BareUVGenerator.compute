@@ -1,0 +1,12 @@
+﻿#pragma kernel UVGen
+#include "HelperFunctions.hlsl"
+
+uint sliceLength;
+uint sqrtSliceLength;
+RWTexture2D<float4> Result;
+
+[numthreads(32,32,1)]
+void UVGen(uint3 id : SV_DispatchThreadID)
+{
+    Result[id.xy] = float4(D3tUV(D2tD3(id.xy, sliceLength, sqrtSliceLength), sliceLength), 1.0);
+}

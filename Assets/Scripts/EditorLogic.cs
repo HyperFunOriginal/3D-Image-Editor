@@ -7,7 +7,7 @@ public class EditorLogic : MonoBehaviour
     public static EditorLogic instance;
     public static FollowCursor conSelected;
     public static DialogBox selected;
-    public static List<GameObject> hoveringOverInput;
+    public static List<NodeInput> hoveringOverInput;
     public static int layer;
     public static bool run;
 
@@ -15,7 +15,7 @@ public class EditorLogic : MonoBehaviour
     {
         instance = this;
         run = false;
-        hoveringOverInput = new List<GameObject>();
+        hoveringOverInput = new List<NodeInput>();
     }
 
     private void Update()
@@ -28,5 +28,7 @@ public class EditorLogic : MonoBehaviour
         if (selected != null && (Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.Backspace)))
             Destroy(selected.gameObject);
         hoveringOverInput.Clear();
+        if (Input.GetKeyDown(KeyCode.Space) && Input.GetKey(KeyCode.LeftControl))
+            run = !run;
     }
 }

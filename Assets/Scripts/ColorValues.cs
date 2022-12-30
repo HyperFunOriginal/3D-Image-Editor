@@ -41,4 +41,28 @@ public class ColorValues : MonoBehaviour
             A.text = tryReadFloat.ToString();
         }
     }
+
+    public struct KeyColorPair
+    {
+        readonly float value;
+        readonly Vector4 vec;
+
+        public KeyColorPair(string key)
+        {
+            string[] sep = key.Split('_');
+            float.TryParse(sep[0], out value);
+            Vector4 v = new Vector4();
+            for (int i = 0; i < 4; i++)
+            {
+                float.TryParse(sep[i + 1], out float _0);
+                v[i] = _0;
+            }
+            vec = v;
+        }
+
+        public override string ToString()
+        {
+            return value + ": " + vec.ToString();
+        }
+    }
 }
