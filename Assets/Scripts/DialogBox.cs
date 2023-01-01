@@ -37,9 +37,9 @@ public class Field
 public class IOImage
 {
     public RenderTexture image;
-    internal CompletionState state = CompletionState.unready;
+    public CompletionState state = CompletionState.unready;
 
-    internal enum CompletionState
+    public enum CompletionState
     {
         ready, unready, failed
     }
@@ -85,6 +85,10 @@ public class DialogBox : MonoBehaviour
     public System.Action onValidate = () => { };
     public System.Action runFunction = () => { };
 
+    public static Color successColor = Color.Lerp(Color.white, Color.green, 0.4f);
+    public static Color failureColor = Color.Lerp(Color.white, Color.red, 0.6f);
+    public static Color unreadyColor = Color.white;
+
     public List<Field> fields;
     public GameObject prefabTextField => (GameObject)Resources.Load("TextField");
     public GameObject prefabDropDown => (GameObject)Resources.Load("DropDown");
@@ -99,12 +103,14 @@ public class DialogBox : MonoBehaviour
     [System.NonSerialized]
     public bool finished;
     Vector3 relMousePos, MousePos;
+    Image dialogboxImg;
 
     public void SetInput(DialogBox reference, int index) => inputs[index] = reference;
 
     // Start is called before the first frame update
     void Start()
     {
+        dialogboxImg = GetComponentInChildren<Image>();
         rectTr = GetComponent<RectTransform>();
         Initialize();
         onValidate += OnValidation;
@@ -356,7 +362,15 @@ public class DialogBox : MonoBehaviour
         if (EditorLogic.run && readyInputs && !finished)
         {
             onValidate();
-            runFunction();
+            try
+            {
+                runFunction();
+                output.state = IOImage.CompletionState.ready;
+            }
+            catch
+            {
+                output.state = IOImage.CompletionState.failed;
+            }
             finished = true;
         }
         if (!EditorLogic.run)
@@ -365,6 +379,13 @@ public class DialogBox : MonoBehaviour
                 output.Clear();
             finished = false;
         }
+
+        if (output == null || output.state == IOImage.CompletionState.unready)
+            dialogboxImg.color = unreadyColor;
+        else if (output.state == IOImage.CompletionState.ready)
+            dialogboxImg.color = successColor;
+        else
+            dialogboxImg.color = failureColor;
     }
 
     Vector3 RoundToTens(Vector3 vector)

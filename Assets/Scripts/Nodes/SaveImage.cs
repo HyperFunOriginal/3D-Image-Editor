@@ -30,12 +30,7 @@ public class SaveImage : DialogBox
         if (output != null)
             output.Clear();
 
-        try {
-            SaveImageToFile(ReturnImg(inputs[0].output.image), Read(fields[0]));
-            output.state = IOImage.CompletionState.ready;
-        } catch {
-            output.state = IOImage.CompletionState.failed;
-        }
+        SaveImageToFile(ReturnImg(inputs[0].output.image), Read(fields[0]));
     }
 
     private Texture2D ReturnImg(RenderTexture rt)

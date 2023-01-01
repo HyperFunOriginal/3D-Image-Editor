@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class GradientMap : VariableLengthNode
 {
-    public ComputeShader gradientMap => (ComputeShader)Resources.Load("GradMapShader");
+    public ComputeShader gradientMap => (ComputeShader)Resources.Load("Shaders/GradMapShader");
 
     new void OnEnable()
     {
@@ -38,28 +38,20 @@ public class GradientMap : VariableLengthNode
         if (output != null)
             output.Clear();
         output = new IOImage(inputs[0].output.image.width);
-        try
-        {
-            bool type = Read(fields[0]) != "Sum";
-            ColorValues.KeyColorPair[] pairings = new ColorValues.KeyColorPair[numAddFields];
-            for (int i = 0; i < pairings.Length; i++)
-                pairings[i] = new ColorValues.KeyColorPair(Read(additionalFields[i]));
+        bool type = Read(fields[0]) != "Sum";
+        ColorValues.KeyColorPair[] pairings = new ColorValues.KeyColorPair[numAddFields];
+        for (int i = 0; i < pairings.Length; i++)
+            pairings[i] = new ColorValues.KeyColorPair(Read(additionalFields[i]));
 
-            ComputeBuffer keyMap = new ComputeBuffer((int)numAddFields, sizeof(float) * 5);
-            keyMap.SetData(pairings);
-            gradientMap.SetBuffer(0, "Keys", keyMap);
-            gradientMap.SetBool("sumMode", type);
-            gradientMap.SetInt("keyCnt", (int)numAddFields);
-            gradientMap.SetTexture(0, "Input", inputs[0].output.image);
-            gradientMap.SetTexture(0, "Output", output.image);
-            gradientMap.Dispatch(0, Mathf.CeilToInt(output.image.width / 32f), Mathf.CeilToInt(output.image.width / 32f), 1);
-            keyMap.Dispose();
-            output.state = IOImage.CompletionState.ready;
-        }
-        catch
-        {
-            output.state = IOImage.CompletionState.failed;
-        }
+        ComputeBuffer keyMap = new ComputeBuffer((int)numAddFields, sizeof(float) * 5);
+        keyMap.SetData(pairings);
+        gradientMap.SetBuffer(0, "Keys", keyMap);
+        gradientMap.SetBool("sumMode", type);
+        gradientMap.SetInt("keyCnt", (int)numAddFields);
+        gradientMap.SetTexture(0, "Input", inputs[0].output.image);
+        gradientMap.SetTexture(0, "Output", output.image);
+        gradientMap.Dispatch(0, Mathf.CeilToInt(output.image.width / 32f), Mathf.CeilToInt(output.image.width / 32f), 1);
+        keyMap.Dispose();
     }
 
     void CustomValidate()

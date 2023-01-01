@@ -1,0 +1,55 @@
+﻿#pragma kernel TileX
+#pragma kernel TileY
+#pragma kernel TileZ
+#include "HelperFunctions.hlsl"
+
+RWTexture2D<float4> Input;
+RWTexture2D<float4> Result;
+RWTexture2D<float4> Temp;
+uint sqrtSliceWidth;
+uint sliceWidth;
+
+[numthreads(32, 32, 1)]
+void TileX(uint3 id : SV_DispatchThreadID)
+{
+    uint3 position = D2tD3(id.xy, sliceWidth, sqrtSliceWidth);
+    
+    float4 this = Input[id.xy];
+    position.x = sliceWidth - position.x - 1;
+    float4 read = Input[D3tD2(position, sliceWidth, sqrtSliceWidth)];
+    float3 uv = D3tUV(position, sliceWidth);
+    
+    float UVx = abs(uv.x + sin(uv.y * 3.1415926) * 0.2);
+    
+    Result[id.xy] = lerp(this, read, max(UVx * 1.5 - 1., 0));
+}
+
+[numthreads(32, 32, 1)]
+void TileY(uint3 id : SV_DispatchThreadID)
+{
+    uint3 position = D2tD3(id.xy, sliceWidth, sqrtSliceWidth);
+    
+    float4 this = Result[id.xy];
+    position.y = sliceWidth - position.y - 1;
+    float4 read = Result[D3tD2(position, sliceWidth, sqrtSliceWidth)];
+    float3 uv = D3tUV(position, sliceWidth);
+    
+    float UVy = abs(uv.y + sin(uv.z * 3.1415926) * .2);
+    
+    Temp[id.xy] = lerp(this, read, max(UVy * 1.5 - 1., 0));
+}
+
+[numthreads(32, 32, 1)]
+void TileZ(uint3 id : SV_DispatchThreadID)
+{
+    uint3 position = D2tD3(id.xy, sliceWidth, sqrtSliceWidth);
+    
+    float4 this = Temp[id.xy];
+    position.z = sliceWidth - position.z - 1;
+    float4 read = Temp[D3tD2(position, sliceWidth, sqrtSliceWidth)];
+    float3 uv = D3tUV(position, sliceWidth);
+    
+    float UVz = abs(uv.z + sin(uv.x * 3.1415926) * .2);
+    
+    Result[id.xy] = lerp(this, read, max(UVz * 1.5 - 1., 0));
+}

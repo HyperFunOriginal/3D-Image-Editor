@@ -1,0 +1,27 @@
+﻿#pragma kernel CSMain
+#include "HelperFunctions.hlsl"
+
+bool fractalMode;
+bool forceNorm;
+int seed;
+int octaves;
+float frequency;
+float persistence;
+float lacunarity;
+
+RWTexture2D<float4> Input;
+RWTexture2D<float4> Output;
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float3 col = 0;
+    if (fractalMode)
+        col = FractalPerlinValue3D(Input[id.xy].rgb * frequency, int4(seed, -seed, 327895, 1238718), lacunarity, persistence, octaves) / FractalPerlinCorrectionFactor(persistence, octaves);
+    else
+        col = PerlinValue3D(Input[id.xy].rgb * frequency, int4(seed, -seed, 327895, 1238718));
+    
+    if (forceNorm)
+        col = (col + 1.0) * .5;
+    
+    Output[id.xy] = float4(col, 1);
+}

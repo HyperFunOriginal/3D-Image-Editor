@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SimpleUV : DialogBox
 {
-    public ComputeShader uvMap => (ComputeShader)Resources.Load("BareUVGenerator");
+    public ComputeShader uvMap => (ComputeShader)Resources.Load("Shaders/BareUVGenerator");
 
     void OnEnable()
     {
@@ -35,24 +35,15 @@ public class SimpleUV : DialogBox
     void RunFunction()
     {
         if (output != null)
-            output.Clear();
-        try
-        {
-            int sliceLength = int.Parse(Read(fields[0]));
-            int sqrtSliceLength = Mathf.RoundToInt(Mathf.Sqrt(sliceLength));
-            int imageWidth = sliceLength * sqrtSliceLength;
-            output = new IOImage(imageWidth);
+        output.Clear();
+        int sliceLength = int.Parse(Read(fields[0]));
+        int sqrtSliceLength = Mathf.RoundToInt(Mathf.Sqrt(sliceLength));
+        int imageWidth = sliceLength * sqrtSliceLength;
+        output = new IOImage(imageWidth);
 
-            uvMap.SetTexture(0, "Result", output.image);
-            uvMap.SetInt("sliceLength", sliceLength);
-            uvMap.SetInt("sqrtSliceLength", sqrtSliceLength);
-            uvMap.Dispatch(0, Mathf.CeilToInt(imageWidth / 32f), Mathf.CeilToInt(imageWidth / 32f), 1);
-
-            output.state = IOImage.CompletionState.ready;
-        }
-        catch
-        {
-            output.state = IOImage.CompletionState.failed;
-        }
+        uvMap.SetTexture(0, "Result", output.image);
+        uvMap.SetInt("sliceLength", sliceLength);
+        uvMap.SetInt("sqrtSliceLength", sqrtSliceLength);
+        uvMap.Dispatch(0, Mathf.CeilToInt(imageWidth / 32f), Mathf.CeilToInt(imageWidth / 32f), 1);
     }
 }

@@ -15,8 +15,7 @@ public class FollowCursor : MonoBehaviour
         reference = GetComponentInParent<DialogBox>();
     }
 
-    // Update is called once per frame
-    void Update()
+    void Follow()
     {
         if (followName == "cursor")
         {
@@ -28,7 +27,8 @@ public class FollowCursor : MonoBehaviour
             line.SetVerticesDirty();
             set = false;
         }
-        else if (followName != "") {
+        else if (followName != "")
+        {
             GameObject target = GameObject.Find(followName);
             if (target == null)
             {
@@ -41,7 +41,7 @@ public class FollowCursor : MonoBehaviour
                 followName = "";
                 return;
             }
-            line.pointD = (target.transform.position - transform.position) / CanvasZoom.zoom;
+            line.pointD = (target.transform.position - transform.position) / CanvasZoom.zoom - Vector3.right * 5f;
             line.pointC = line.pointD - Vector3.right * (30f + Mathf.Abs(line.pointD.x - 10f) * 0.5f);
             line.pointB = Vector3.right * (40f + Mathf.Abs(line.pointD.x - 10f) * 0.5f);
             line.pointA = Vector3.zero;
@@ -69,6 +69,8 @@ public class FollowCursor : MonoBehaviour
 
     private void LateUpdate()
     {
+        Follow();
+
         if (!Input.GetMouseButtonDown(0))
             return;
         if (MouseHoverOver(Input.mousePosition))

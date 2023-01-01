@@ -1,0 +1,30 @@
+﻿#pragma kernel CSMain
+
+bool ignoreAlpha;
+int mode;
+Texture2D<float4> Input1;
+Texture2D<float4> Input2;
+RWTexture2D<float4> Output;
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float4 a = Input1[id.xy];
+    float4 b = Input2[id.xy];
+    if (mode == 0)
+        Output[id.xy] = a + (ignoreAlpha ? float4(b.rgb, 0) : b);
+    else if (mode == 1)
+        Output[id.xy] = a - (ignoreAlpha ? float4(b.rgb, 0) : b);
+    else if (mode == 2)
+        Output[id.xy] = a * (ignoreAlpha ? float4(b.rgb, 1) : b);
+    else if (mode == 3)
+        Output[id.xy] = a / (ignoreAlpha ? float4(b.rgb, 1) : b);
+    else if (mode == 4)
+        Output[id.xy] = min(a, (ignoreAlpha ? float4(b.rgb, a.a) : b));
+    else if (mode == 5)
+        Output[id.xy] = max(a, (ignoreAlpha ? float4(b.rgb, a.a) : b));
+    else if (mode == 6)
+        Output[id.xy] = abs(a - (ignoreAlpha ? float4(b.rgb, 0) : b));
+    else
+        Output[id.xy] = float4(1, 0, 1, 1);
+}
