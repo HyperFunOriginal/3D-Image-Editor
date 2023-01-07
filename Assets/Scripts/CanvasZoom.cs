@@ -19,6 +19,11 @@ public class CanvasZoom : MonoBehaviour
         lerp = 0f;
     }
 
+    public static void ReinitializeZoom()
+    {
+        zoom = 1f;
+    }
+
     // Update is called once per frame
     void Update()
     {

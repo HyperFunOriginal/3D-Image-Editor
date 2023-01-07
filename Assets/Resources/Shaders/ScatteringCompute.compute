@@ -1,0 +1,41 @@
+﻿#pragma kernel Scatter
+#include "HelperFunctions.hlsl"
+
+float scatteringCoeff;
+float2 stepSize;
+uint sliceLength;
+uint rayCount;
+uint maxIterations;
+uint sqrtsliceLength;
+Texture2D<float4> Input;
+RWTexture2D<float4> Output;
+
+float3 CheckContribution(float3 origin, float3 direction)
+{
+    float3 opticalDepth = 1;
+    float3 inScatter = 0;
+    float dist = 1;
+    for (uint i = 0; i < maxIterations; i++)
+    {
+        float4 col = ReadFromTexture(origin, sliceLength, sqrtsliceLength, Input);
+        inScatter += scatteringCoeff * opticalDepth * col.rgb * col.a / (dist * dist);
+        opticalDepth *= exp(-(col.rgb + .5) * col.a * stepSize.x * stepSize.y);
+        origin += direction * stepSize.x;
+        dist += stepSize.x / rayCount * sliceLength;
+    }
+    return inScatter;
+}
+
+[numthreads(32, 32, 1)]
+void Scatter(uint3 id : SV_DispatchThreadID)
+{
+    float3 uv = D3tUV(D2tD3(id.xy, sliceLength, sqrtsliceLength), sliceLength);
+    int4 seed = int4(id.xy, sliceLength - 184721, maxIterations + 3187178);
+    float3 col = 0;
+    for (uint i = 0; i < rayCount; i++)
+    {
+        float3 dir = normalize(RNGVec3D(seed, 0));
+        col += CheckContribution(uv, dir);
+    }
+    Output[id.xy] = Input[id.xy] + float4(col, 0);
+}

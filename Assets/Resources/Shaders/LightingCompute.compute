@@ -1,0 +1,29 @@
+﻿#pragma kernel Lighting
+#include "HelperFunctions.hlsl"
+
+float4 lightInfo;
+float2 stepSize;
+uint sliceLength;
+uint sqrtsliceLength;
+Texture2D<float4> Input;
+RWTexture2D<float4> Output;
+
+[numthreads(32,32,1)]
+void Lighting (uint3 id : SV_DispatchThreadID)
+{
+    float3 uv = D3tUV(D2tD3(id.xy, sliceLength, sqrtsliceLength), sliceLength);
+    float3 rayDir = normalize(lightInfo.xyz - uv + RNGVec3D(int4(id.xy, sliceLength, sqrtsliceLength)) * .0005);
+    float3 opticalDepth = 0;
+    
+    for (int i = 0; i < 1024; i++)
+    {
+        float4 col = ReadFromTexture(uv, sliceLength, sqrtsliceLength, Input);
+        opticalDepth += (col.rgb + .5) * col.a;
+        uv += rayDir * stepSize.x;
+        
+        if (length(uv - lightInfo.xyz) < stepSize.x)
+            break;
+    }
+
+    Output[id.xy] = Input[id.xy] * float4(exp(-opticalDepth * stepSize.x * stepSize.y) * lightInfo.w, 1);
+}

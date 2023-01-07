@@ -62,7 +62,6 @@ public class PerlinNoise : VariableLengthNode
         perlinNoise.SetTexture(0, "Input", inputs[0].output.image);
         perlinNoise.SetTexture(0, "Output", output.image);
         perlinNoise.Dispatch(0, Mathf.CeilToInt(output.image.width / 32f), Mathf.CeilToInt(output.image.width / 32f), 1);
-        output.state = IOImage.CompletionState.ready;
     }
 
     void CustomValidate()

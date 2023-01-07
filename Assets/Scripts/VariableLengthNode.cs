@@ -10,6 +10,7 @@ public class VariableLengthNode : DialogBox
     // Start is called before the first frame update
     public virtual void OnEnable()
     {
+        numAddFields = 0;
         updateFunction += CustomUpdate;
         startFunction += CustomStart;
     }

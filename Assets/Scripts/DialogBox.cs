@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -96,6 +97,7 @@ public class DialogBox : MonoBehaviour
     public GameObject prefabDisplayText => (GameObject)Resources.Load("TextDisplay");
     public GameObject prefabBoolean => (GameObject)Resources.Load("Toggle");
     public GameObject prefabInput => (GameObject)Resources.Load("NodeIn");
+    public GameObject runtimeTransform;
 
     RectTransform rectTr;
     float fieldPositions;
@@ -122,7 +124,7 @@ public class DialogBox : MonoBehaviour
     {
         for (int i = 0; i < inputs.Count; i++)
         {
-            GameObject g = Instantiate(prefabInput, transform);
+            GameObject g = Instantiate(prefabInput, runtimeTransform.transform);
             float y = -200f * (i - 0.5f * (inputs.Count - 1f)) / (inputs.Count + 1.0f);
             g.transform.SetAsFirstSibling();
             g.GetComponent<RectTransform>().anchoredPosition = new Vector2(-8, y);
@@ -134,6 +136,16 @@ public class DialogBox : MonoBehaviour
     void Initialize()
     {
         output = new IOImage();
+        runtimeTransform = new GameObject("Procedural");
+        runtimeTransform.transform.SetParent(transform);
+        RectTransform r = runtimeTransform.AddComponent<RectTransform>();
+        r.anchorMax = Vector2.one;
+        r.anchorMin = Vector2.zero;
+        r.sizeDelta = Vector2.zero;
+        r.localScale = Vector3.one;
+
+        runtimeTransform.transform.localPosition = Vector3.zero;
+
         rectTr.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 108f + fields.Count * 30f);
         fieldPositions = 68f;
         Text txt = GetComponentInChildren<Text>();
@@ -169,7 +181,7 @@ public class DialogBox : MonoBehaviour
 
         if (field.type == Field.FieldType.displayText)
         {
-            GameObject g = Instantiate(prefabDisplayText, transform);
+            GameObject g = Instantiate(prefabDisplayText, runtimeTransform.transform);
             g.name = field.name;
             g.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -fieldPositions);
             g.GetComponent<Text>().text = field.parameters[0];
@@ -178,7 +190,7 @@ public class DialogBox : MonoBehaviour
         }
         if (field.type == Field.FieldType._bool)
         {
-            GameObject g = Instantiate(prefabBoolean, transform);
+            GameObject g = Instantiate(prefabBoolean, runtimeTransform.transform);
             g.name = field.name;
             g.GetComponent<RectTransform>().anchoredPosition = new Vector2(-22f, -fieldPositions);
             g.GetComponent<Text>().text = field.name + ":";
@@ -187,7 +199,7 @@ public class DialogBox : MonoBehaviour
         }
         if (field.type == Field.FieldType.colorArr)
         {
-            GameObject g = Instantiate(prefabColorArr, transform);
+            GameObject g = Instantiate(prefabColorArr, runtimeTransform.transform);
             g.name = field.name;
             g.GetComponent<RectTransform>().anchoredPosition = new Vector2(-110f, -fieldPositions);
             field.fieldValueRead = g;
@@ -195,7 +207,7 @@ public class DialogBox : MonoBehaviour
         }
         if (field.type == Field.FieldType._uint || field.type == Field.FieldType._int || field.type == Field.FieldType._float || field.type == Field.FieldType.text)
         {
-            GameObject g = Instantiate(prefabTextField, transform);
+            GameObject g = Instantiate(prefabTextField, runtimeTransform.transform);
             g.name = field.name;
             g.GetComponent<Text>().text = field.name + ":";
             g.GetComponent<RectTransform>().anchoredPosition = new Vector2(-57f, -fieldPositions);
@@ -223,7 +235,7 @@ public class DialogBox : MonoBehaviour
         }
         if (field.type == Field.FieldType.dropdown)
         {
-            GameObject g = Instantiate(prefabDropDown, transform);
+            GameObject g = Instantiate(prefabDropDown, runtimeTransform.transform);
             g.name = field.name;
             g.GetComponent<Text>().text = field.name + ":";
             g.GetComponent<RectTransform>().anchoredPosition = new Vector2(-57f, -fieldPositions);
@@ -308,6 +320,15 @@ public class DialogBox : MonoBehaviour
         inputs.Clear();
     }
 
+    public bool HoveringOver()
+    {
+        Vector3 delta = (Input.mousePosition - transform.position) / CanvasZoom.zoom;
+        Vector3 delta2 = new Vector3();
+        delta2.x = Mathf.Clamp(delta.x, 15f - .5f * rectTr.rect.width, .5f * rectTr.rect.width - 15f);
+        delta2.y = Mathf.Clamp(delta.y, 15f - .5f * rectTr.rect.height, .5f * rectTr.rect.height - 15f);
+        return (delta - delta2).magnitude < 15f;
+    }
+
     void OnValidation()
     {
         foreach (Field f in fields)
@@ -332,14 +353,7 @@ public class DialogBox : MonoBehaviour
         }
 
         if (Input.GetMouseButtonDown(0))
-        {
-            Vector3 delta = Input.mousePosition - transform.position;
-            delta /= CanvasZoom.zoom;
-            Vector3 delta2 = new Vector3();
-            delta2.x = Mathf.Clamp(delta.x, 15f - .5f * rectTr.rect.width, .5f * rectTr.rect.width - 15f);
-            delta2.y = Mathf.Clamp(delta.y, 15f - .5f * rectTr.rect.height, .5f * rectTr.rect.height - 15f);
-            holdingDownMouse = (delta - delta2).magnitude < 15f;
-        }
+            holdingDownMouse = HoveringOver();
         holdingDownMouse &= !Input.GetMouseButtonUp(0) && !Input.GetKeyDown(KeyCode.Delete) && !Input.GetKeyDown(KeyCode.Backspace);
 
         if (Input.GetKeyDown(KeyCode.Return))
@@ -349,7 +363,19 @@ public class DialogBox : MonoBehaviour
             transform.position += Input.mousePosition - MousePos;
         MousePos = Input.mousePosition;
 
+        if (Input.GetMouseButtonDown(2) && HoveringOver())
+            Duplicate();
+
         updateFunction();
+    }
+
+    void Duplicate()
+    {
+        DialogBox copy = Instantiate(gameObject, gameObject.transform.parent).GetComponent<DialogBox>();
+        copy.transform.position += Vector3.down * 30f;
+        copy.name = gameObject.name;
+        DestroyImmediate(copy.runtimeTransform);
+        copy.fields.Clear();
     }
 
     private void LateUpdate()
@@ -367,9 +393,10 @@ public class DialogBox : MonoBehaviour
                 runFunction();
                 output.state = IOImage.CompletionState.ready;
             }
-            catch
+            catch (System.Exception e)
             {
                 output.state = IOImage.CompletionState.failed;
+                Debug.LogError(e);
             }
             finished = true;
         }

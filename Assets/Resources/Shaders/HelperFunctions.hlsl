@@ -60,6 +60,7 @@ void WriteToTexture(float3 uvs, float4 data, uint sliceLength, uint sqrtSliceLen
 
 int4 RNG(int4 seed)
 {
+    seed += int4(7482142, 14782781, 578122, 175827851);
     int4 a = seed.xzwy << 7;
     seed = seed * 195457815 + 1013904223;
     seed += seed.yxzy * seed.xwxz;
@@ -76,6 +77,12 @@ float4 RNGVec(int4 seed)
 float3 RNGVec3D(int4 seed)
 {
     return RNGVec(seed).xyz;
+}
+
+float3 RNGVec3D(inout int4 seed, int _0)
+{
+    seed = RNG(seed);
+    return (seed / float(0x7fffffffu)).xyz;
 }
 
 void RNGRotation(int4 seed, out float3 x, out float3 y, out float3 z)
