@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleUV : DialogBox
+public class SimpleUV : BaseNode
 {
     public ComputeShader uvMap => (ComputeShader)Resources.Load("Shaders/BareUVGenerator");
 
@@ -10,19 +10,20 @@ public class SimpleUV : DialogBox
     {
         onValidate += CustomValidate;
         runFunction += RunFunction;
-        startFunction += CustomStart2;
+        addFieldsMethod += CustomStart2;
     }
 
     void CustomStart2()
     {
         AddField(new Field() { name = "Slice Length", type = Field.FieldType._uint, parameters = new List<string>() });
+        name = "3D UVs";
     }
 
     void OnDisable()
     {
         onValidate -= CustomValidate;
         runFunction -= RunFunction;
-        startFunction -= CustomStart2;
+        addFieldsMethod -= CustomStart2;
     }
 
     void CustomValidate()

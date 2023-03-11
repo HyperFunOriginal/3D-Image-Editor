@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class NodeInput : MonoBehaviour
 {
-    internal DialogBox reference;
-    internal int index; // Needs initialization from DialogBox
+    internal BaseNode reference;
+    public long hashCode;
+    internal int index;
 
     private bool MouseHoverOver(Vector3 pos)
     {
@@ -15,10 +16,8 @@ public class NodeInput : MonoBehaviour
 
     private void Start()
     {
-        string hash = Random.Range(int.MinValue, int.MaxValue).ToString();
-        hash += Random.Range(int.MinValue, int.MaxValue).ToString();
-        name = hash;
-        reference = GetComponentInParent<DialogBox>();
+        name = System.Convert.ToString(hashCode, 16).PadLeft(16, '0');
+        reference = GetComponentInParent<BaseNode>();
     }
     // Update is called once per frame
     void Update()

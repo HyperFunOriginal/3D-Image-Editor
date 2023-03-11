@@ -10,18 +10,19 @@ public class GradientMap : VariableLengthNode
     new void OnEnable()
     {
         onValidate += CustomValidate;
-        inputs = new List<DialogBox>();
+        inputs = new List<BaseNode>();
         inputs.Add(null);
 
-        startFunction += CustomStart2;
+        addFieldsMethod += CustomStart2;
         runFunction += RunFunction;
+
         base.OnEnable();
     }
 
     new void OnDisable()
     {
         onValidate -= CustomValidate;
-        startFunction -= CustomStart2;
+        addFieldsMethod -= CustomStart2;
         runFunction -= RunFunction;
         base.OnDisable();
     }
@@ -31,6 +32,7 @@ public class GradientMap : VariableLengthNode
         AddField(new Field() { name = "Luminance Type", type = Field.FieldType.dropdown, parameters = new List<string>() { "Sum", "Length" } });
         AddField(new Field() { name = "Number of points", type = Field.FieldType._uint, parameters = new List<string>() });
         addField = new Field() { name = "points", type = Field.FieldType.colorArr, parameters = new List<string>() };
+        name = "Gradient Map";
     }
 
     void RunFunction()

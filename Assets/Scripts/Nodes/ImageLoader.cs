@@ -3,25 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
-public class ImageLoader : DialogBox
+public class ImageLoader : BaseNode
 {
     void OnEnable()
     {
-        inputs = new List<DialogBox>();
+        inputs = new List<BaseNode>();
 
-        startFunction += CustomStart2;
+        addFieldsMethod += CustomStart2;
         runFunction += RunFunction;
     }
 
     void OnDisable()
     {
-        startFunction -= CustomStart2;
+        addFieldsMethod -= CustomStart2;
         runFunction -= RunFunction;
     }
 
     void CustomStart2()
     {
         AddField(new Field() { name = "Filename", type = Field.FieldType.text, parameters = new List<string>() });
+        name = "Load PNG";
     }
 
     void RunFunction()

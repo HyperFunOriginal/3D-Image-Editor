@@ -10,10 +10,10 @@ public class PerlinNoise : VariableLengthNode
     new void OnEnable()
     {
         onValidate += CustomValidate;
-        inputs = new List<DialogBox>();
+        inputs = new List<BaseNode>();
         inputs.Add(null);
 
-        startFunction += CustomStart2;
+        addFieldsMethod += CustomStart2;
         runFunction += RunFunction;
         updateFunction += CustomUpdate2;
         base.OnEnable();
@@ -22,7 +22,7 @@ public class PerlinNoise : VariableLengthNode
     new void OnDisable()
     {
         onValidate -= CustomValidate;
-        startFunction -= CustomStart2;
+        addFieldsMethod -= CustomStart2;
         runFunction -= RunFunction;
         updateFunction -= CustomUpdate2;
         base.OnDisable();
@@ -44,6 +44,7 @@ public class PerlinNoise : VariableLengthNode
         fractal = new Field() { name = "Perlin Noise Type", type = Field.FieldType.dropdown, parameters = new List<string>() { "Simple", "Fractal" } };
         AddField(fractal);
         addField = new Field() { name = "Octaves", type = Field.FieldType._uint, parameters = new List<string>() };
+        name = "Perlin Noise";
     }
 
     void RunFunction()

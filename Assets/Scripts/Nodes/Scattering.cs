@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Scattering : DialogBox
+public class Scattering : BaseNode
 {
     public ComputeShader scatterCompute => (ComputeShader)Resources.Load("Shaders/ScatteringCompute");
 
     void OnEnable()
     {
-        inputs = new List<DialogBox>();
+        inputs = new List<BaseNode>();
         inputs.Add(null);
 
-        startFunction += CustomStart2;
+        addFieldsMethod += CustomStart2;
         runFunction += RunFunction;
         onValidate += CustomValidate;
     }
 
     void OnDisable()
     {
-        startFunction -= CustomStart2;
+        addFieldsMethod -= CustomStart2;
         runFunction -= RunFunction;
         onValidate -= CustomValidate;
     }
@@ -30,6 +30,7 @@ public class Scattering : DialogBox
         AddField(new Field() { name = "Step Size", type = Field.FieldType._float, parameters = new List<string>() });
         AddField(new Field() { name = "Scattering Coeff.", type = Field.FieldType._float, parameters = new List<string>() });
         AddField(new Field() { name = "Density Multiplier", type = Field.FieldType._float, parameters = new List<string>() });
+        name = "Compute Scattering";
     }
 
     void RunFunction()

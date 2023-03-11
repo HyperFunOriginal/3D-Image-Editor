@@ -5,7 +5,22 @@ using UnityEngine.UI;
 
 public class ColorValues : MonoBehaviour
 {
-    public string text => L.text + "_" + R.text + "_" + G.text + "_" + B.text + "_" + A.text;
+    public string text
+    {
+        get
+        {
+            return L.text + "_" + R.text + "_" + G.text + "_" + B.text + "_" + A.text;
+        }
+        set
+        {
+            KeyColorPair k = new KeyColorPair(value);
+            L.text = k.value.ToString();
+            R.text = k.color.x.ToString();
+            G.text = k.color.y.ToString();
+            B.text = k.color.z.ToString();
+            A.text = k.color.w.ToString();
+        }
+    }
     public InputField L;
     public InputField R;
     public InputField G;
@@ -44,8 +59,8 @@ public class ColorValues : MonoBehaviour
 
     public struct KeyColorPair
     {
-        readonly float value;
-        readonly Vector4 vec;
+        public readonly float value;
+        public readonly Vector4 color;
 
         public KeyColorPair(string key)
         {
@@ -57,12 +72,12 @@ public class ColorValues : MonoBehaviour
                 float.TryParse(sep[i + 1], out float _0);
                 v[i] = _0;
             }
-            vec = v;
+            color = v;
         }
 
         public override string ToString()
         {
-            return value + ": " + vec.ToString();
+            return value + ": " + color.ToString();
         }
     }
 }

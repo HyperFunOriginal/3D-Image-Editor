@@ -14,6 +14,7 @@ public class CanvasZoom : MonoBehaviour
     void Start()
     {
         instance = this;
+
         zoom = 1f;
         canvas = GetComponent<Canvas>();
         lerp = 0f;
@@ -32,5 +33,8 @@ public class CanvasZoom : MonoBehaviour
         zoom *= Mathf.Exp(lerp);
         zoom = Mathf.Clamp(zoom, 0.3f, 2f);
         canvas.scaleFactor = zoom;
+
+        if (VisualiserInterface.visualising)
+            gameObject.SetActive(false);
     }
 }

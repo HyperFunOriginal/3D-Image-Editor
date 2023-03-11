@@ -6,13 +6,14 @@ public class FollowCursor : MonoBehaviour
 {
     UILine line;
     public string followName;
-    DialogBox reference;
+    public long hashCode;
+    internal BaseNode reference;
     bool set;
     // Start is called before the first frame update
     void Start()
     {
         line = GetComponent<UILine>();
-        reference = GetComponentInParent<DialogBox>();
+        reference = GetComponentInParent<BaseNode>();
     }
 
     void Follow()

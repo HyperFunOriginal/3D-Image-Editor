@@ -3,34 +3,27 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-public class SaveImage : DialogBox
+public class SaveImage : BaseNode
 {
     void OnEnable()
     {
-        inputs = new List<DialogBox>();
+        inputs = new List<BaseNode>();
         inputs.Add(null);
 
-        startFunction += CustomStart2;
+        addFieldsMethod += CustomStart2;
         runFunction += RunFunction;
     }
 
     void OnDisable()
     {
-        startFunction -= CustomStart2;
+        addFieldsMethod -= CustomStart2;
         runFunction -= RunFunction;
     }
 
     void CustomStart2()
     {
         AddField(new Field() { name = "Filename", type = Field.FieldType.text, parameters = new List<string>()});
-    }
-
-    void RunFunction()
-    {
-        if (output != null)
-            output.Clear();
-
-        SaveImageToFile(ReturnImg(inputs[0].output.image), Read(fields[0]));
+        name = "Save PNG";
     }
 
     private Texture2D ReturnImg(RenderTexture rt)
@@ -42,6 +35,14 @@ public class SaveImage : DialogBox
         outputImage.Apply();
         RenderTexture.active = active;
         return outputImage;
+    }
+
+    void RunFunction()
+    {
+        if (output != null)
+            output.Clear();
+
+        SaveImageToFile(ReturnImg(inputs[0].output.image), Read(fields[0]));
     }
 
     private void SaveImageToFile(Texture2D img, string fileName)

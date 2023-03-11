@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Lighting : DialogBox
+public class Lighting : BaseNode
 {
     public ComputeShader lightingCompute => (ComputeShader)Resources.Load("Shaders/LightingCompute");
 
     void OnEnable()
     {
-        inputs = new List<DialogBox>();
+        inputs = new List<BaseNode>();
         inputs.Add(null);
 
-        startFunction += CustomStart2;
+        addFieldsMethod += CustomStart2;
         runFunction += RunFunction;
         onValidate += CustomValidate;
     }
 
     void OnDisable()
     {
-        startFunction -= CustomStart2;
+        addFieldsMethod -= CustomStart2;
         runFunction -= RunFunction;
         onValidate -= CustomValidate;
     }
@@ -31,6 +31,7 @@ public class Lighting : DialogBox
         AddField(new Field() { name = "Source Intensity", type = Field.FieldType._float, parameters = new List<string>()});
         AddField(new Field() { name = "Step Size", type = Field.FieldType._float, parameters = new List<string>()});
         AddField(new Field() { name = "Density Multiplier", type = Field.FieldType._float, parameters = new List<string>()});
+        name = "Compute Lighting";
     }
 
     void RunFunction()

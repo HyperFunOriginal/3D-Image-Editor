@@ -1,0 +1,14 @@
+{
+    "name": "Visualiser",
+    "references": [
+        "GUID:3f3c71c8c834d6047afff66ace98075c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

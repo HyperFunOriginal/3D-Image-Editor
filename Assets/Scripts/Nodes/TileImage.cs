@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TileImage : DialogBox
+public class TileImage : BaseNode
 {
     public ComputeShader tile3D => (ComputeShader)Resources.Load("Shaders/Tile3D");
     int tileX, tileY, tileZ;
 
     void OnEnable()
     {
-        inputs = new List<DialogBox>();
+        inputs = new List<BaseNode>();
         inputs.Add(null);
 
-        startFunction += CustomStart2;
+        addFieldsMethod += CustomStart2;
         runFunction += RunFunction;
     }
 
     void OnDisable()
     {
-        startFunction -= CustomStart2;
+        addFieldsMethod -= CustomStart2;
         runFunction -= RunFunction;
     }
 
@@ -27,6 +27,7 @@ public class TileImage : DialogBox
         tileX = tile3D.FindKernel("TileX");
         tileY = tile3D.FindKernel("TileY");
         tileZ = tile3D.FindKernel("TileZ");
+        name = "Tile 3D Image";
     }
 
     void RunFunction()

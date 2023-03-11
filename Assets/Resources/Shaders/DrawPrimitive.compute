@@ -1,0 +1,60 @@
+﻿#pragma kernel SolidColor
+#pragma kernel DrawCube
+#pragma kernel DrawSphere
+#pragma kernel DrawCylinderX
+#pragma kernel DrawCylinderY
+#pragma kernel DrawCylinderZ
+
+#include "HelperFunctions.hlsl"
+
+float4 baseColor;
+RWTexture2D<float4> Result;
+
+[numthreads(32,32,1)]
+void SolidColor(uint3 id : SV_DispatchThreadID)
+{
+    Result[id.xy] = baseColor;
+}
+
+uint sliceLength;
+uint sqrtSliceLength;
+
+float sdfBlurAmt;
+float3 dimensions;
+[numthreads(32, 32, 1)]
+void DrawCube(uint3 id : SV_DispatchThreadID)
+{
+    float3 lerpComp = dimensions - abs(D3tUV(D2tD3(id.xy, sliceLength, sqrtSliceLength), sliceLength) * 2.);
+    Result[id.xy] = baseColor * clamp(min(lerpComp.x, min(lerpComp.y, lerpComp.z)) / sdfBlurAmt, 0, 1);
+}
+
+float radius;
+[numthreads(32, 32, 1)]
+void DrawSphere(uint3 id : SV_DispatchThreadID)
+{
+    float lerpComp = radius - length(D3tUV(D2tD3(id.xy, sliceLength, sqrtSliceLength), sliceLength));
+    Result[id.xy] = baseColor * clamp(lerpComp / sdfBlurAmt, 0, 1);
+}
+
+float lengthCylinder;
+[numthreads(32, 32, 1)]
+void DrawCylinderX(uint3 id : SV_DispatchThreadID)
+{
+    float3 position = D3tUV(D2tD3(id.xy, sliceLength, sqrtSliceLength), sliceLength);
+    float lerpComp = min(radius - length(position.yz), lengthCylinder - abs(position.x * 2.));
+    Result[id.xy] = baseColor * clamp(lerpComp / sdfBlurAmt, 0, 1);
+}
+[numthreads(32, 32, 1)]
+void DrawCylinderY(uint3 id : SV_DispatchThreadID)
+{
+    float3 position = D3tUV(D2tD3(id.xy, sliceLength, sqrtSliceLength), sliceLength);
+    float lerpComp = min(radius - length(position.xz), lengthCylinder - abs(position.y * 2.));
+    Result[id.xy] = baseColor * clamp(lerpComp / sdfBlurAmt, 0, 1);
+}
+[numthreads(32, 32, 1)]
+void DrawCylinderZ(uint3 id : SV_DispatchThreadID)
+{
+    float3 position = D3tUV(D2tD3(id.xy, sliceLength, sqrtSliceLength), sliceLength);
+    float lerpComp = min(radius - length(position.xy), lengthCylinder - abs(position.z * 2.));
+    Result[id.xy] = baseColor * clamp(lerpComp / sdfBlurAmt, 0, 1);
+}
